@@ -1,3 +1,7 @@
 train/
 *.csv
 data
+Type_1
+Type_2
+Type_3
+test
