@@ -7,9 +7,6 @@ import time
 import random
 import scipy.ndimage.interpolation as scizoom
 
-import warnings
-warnings.filterwarnings('ignore')
-
 def show(img):
     plt.imshow(img)
     plt.show()
@@ -332,3 +329,11 @@ for i in range(len(dense_shapes)-1):
     fclayer = BatchNormalization()(fclayer)
 
 outs = Dense(dense_shapes[-1], activation='softmax')(fclayer)
+
+model = Model(inputs=inputs,outputs=outs)
+model.load_weights('model.h5')
+adam_opt = optimizers.Adam(lr=0.00001)
+model.compile(loss='categorical_crossentropy', optimizer=adam_opt, metrics=['accuracy'])
+history = model.fit_generator(train_generator, train_steps_per_epoch, epochs=2,
+                    validation_data=valid_generator,validation_steps=valid_steps_per_epoch)
+model.save('model.h5')
