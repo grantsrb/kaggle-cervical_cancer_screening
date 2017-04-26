@@ -7,7 +7,8 @@ import time
 import random
 import scipy.ndimage.interpolation as scizoom
 
-%matplotlib inline
+import warnings
+warnings.filterwarnings('ignore')
 
 def show(img):
     plt.imshow(img)
@@ -200,3 +201,134 @@ def random_augment(image, rotation_limit=180, shift_limit=10, zoom_limit=1/3.):
         aug_image = random_zoom(image,max_zoom=zoom_limit)
 
     return aug_image
+
+
+def convert_images(paths, labels, resize_dims=(256,256), randomly_augment=False):
+    # ** Reads in images from their paths, resizes the images and returns
+    # the images with their corresponding labels. **
+
+    # paths - the file paths to the images
+    # labels - a numpy array of the corresponding labels to the images
+    # resize_dims - the resizing dimensions for the image
+    # add_zooms - optional parameter to add randomly scaled copies of the images to the output
+    # randomly_augment - optional parameter to add randomly rotated,
+    #                    translated, and scaled images to the output
+
+    images = []
+    new_labels = []
+    for i,path in enumerate(paths):
+        label = labels[i]
+        try:
+            img = mpimg.imread(path)
+            resized_img = sci.imresize(img, resize_dims)
+        except OSError:
+            if i == 0:
+                img = mpimg.imread(paths[i+1])
+                resized_img = sci.imresize(img, resize_dims)
+                resized_img = random_augment(resized_img)
+            elif i > 0:
+                sub_index = -1
+                if randomly_augment:
+                    sub_index = -2
+                resized_img = random_augment(images[sub_index])
+            labels[i] = labels[i-1]
+            label = labels[i]
+        images.append(resized_img)
+        if randomly_augment:
+            images.append(random_augment(resized_img))
+            new_labels.append(label)
+            new_labels.append(label)
+    if randomly_augment:
+        return np.array(images,dtype=np.float32), np.array(new_labels,dtype=np.float32)
+    return np.array(images,dtype=np.float32), labels
+
+
+def image_generator(file_paths, labels, batch_size, resize_dims=(256,256), randomly_augment=False):
+    # ** Generator function to convert image file paths to images with labels in batches. **
+
+    # file_paths - an array of the image file paths as strings
+    # labels - a numpy array of labels for the corresponding images
+    # batch_size - the desired size of the batch to be returned at each yield
+    # resize_dims - the desired x and y dimensions of the images to be read in
+    # add_zooms - optional parameter add an additional randomly zoomed image to the batch for each file path
+    # randomly_augment - optional parameter add an additional randomly rotated, translated,
+    #         and zoomed image to the batch for each file path
+
+    if randomly_augment:
+        batch_size = int(batch_size/2) # the other half of the batch is filled with augmentations
+    while 1:
+        file_paths,labels = shuffle(file_paths,labels)
+        for batch in range(0, len(file_paths), batch_size):
+            images, batch_labels = convert_images(file_paths[batch:batch+batch_size],
+                                                  labels[batch:batch+batch_size],
+                                                  resize_dims=resize_dims,
+                                                  randomly_augment=randomly_augment)
+            yield images, batch_labels
+
+
+batch_size = 96
+add_random_augmentations = True
+resize_dims = (256,256)
+
+n_train_samples = len(X_train_paths)
+if add_random_augmentations:
+    n_train_samples = 2*len(X_train_paths)
+
+train_steps_per_epoch = n_train_samples//batch_size + 1
+if n_train_samples % batch_size == 0: train_steps_per_epoch = n_train_samples//batch_size
+
+valid_steps_per_epoch = len(X_valid_paths)//batch_size
+
+
+train_generator = image_generator(X_train_paths,
+                                  y_train,
+                                  batch_size,
+                                  resize_dims=resize_dims,
+                                  randomly_augment=add_random_augmentations)
+valid_generator = image_generator(X_valid_paths, y_valid,
+                                  batch_size, resize_dims=resize_dims)
+
+
+
+from keras.models import Sequential, Model
+from keras.layers import Conv2D, MaxPooling2D, Dense, Input, Flatten, Dropout, concatenate
+from keras.layers.normalization import BatchNormalization
+from keras import optimizers
+
+
+stacks = []
+conv_shapes = [(1,1),(3,3),(5,5)]
+conv_depths = [10,10,10,10,10]
+pooling_filter = (2,2)
+pooling_stride = (2,2)
+dense_shapes = [150,64,20,n_labels]
+
+inputs = Input(shape=(resize_dims[0],resize_dims[1],3))
+zen_layer = BatchNormalization()(inputs)
+
+for shape in conv_shapes:
+    stacks.append(Conv2D(conv_depths[0], shape, padding='same', activation='elu')(inputs))
+layer = concatenate(stacks,axis=-1)
+layer = BatchNormalization()(layer)
+layer = MaxPooling2D(pooling_filter,strides=pooling_stride,padding='same')(layer)
+# layer = Dropout(0.05)(layer)
+
+for i in range(1,len(conv_depths)):
+    stacks = []
+    for shape in conv_shapes:
+        stacks.append(Conv2D(conv_depths[i],shape,padding='same',activation='elu')(layer))
+    layer = concatenate(stacks,axis=-1)
+    layer = BatchNormalization()(layer)
+#     layer = Dropout(i*10**-2+.05)(layer)
+    layer = MaxPooling2D(pooling_filter,strides=pooling_stride, padding='same')(layer)
+
+layer = Flatten()(layer)
+fclayer = Dropout(0.5)(layer)
+
+for i in range(len(dense_shapes)-1):
+    fclayer = Dense(dense_shapes[i], activation='elu')(fclayer)
+#     if i == 0:
+#         fclayer = Dropout(0.5)(fclayer)
+    fclayer = BatchNormalization()(fclayer)
+
+outs = Dense(dense_shapes[-1], activation='softmax')(fclayer)
