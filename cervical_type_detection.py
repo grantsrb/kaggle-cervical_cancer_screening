@@ -7,6 +7,7 @@ import time
 import random
 import scipy.ndimage.interpolation as scizoom
 
+
 def show(img):
     plt.imshow(img)
     plt.show()
