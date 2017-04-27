@@ -1,8 +1,11 @@
+# External Imports
 import numpy as np
-import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
+from sklearn.utils import shuffle
+import scipy.misc as sci
 import os
 
+# Internal Imports
 import image_manipulation as imanip
 
 def read_paths(path, no_labels=False, label_type=None):
