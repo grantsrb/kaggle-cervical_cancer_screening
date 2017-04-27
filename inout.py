@@ -53,6 +53,22 @@ def save_paths(csv_file_path, paths, labels):
         for path,label in zip(paths,labels):
             csv_file.write(path + ',' + str(label) + '\n')
 
+def save_predictions(csv_file_path, names, predictions, header=None):
+    # ** Saved predictions into csv with proper submission format for Kaggle **
+
+    # csv_file_path - path to csv save file as string
+    # names - list of the test image file names as strings
+    # predictions - list of one_hot encoded predictions
+    # header - first line of csv as string
+    
+    with open(csv_file_path, 'w') as f:
+        f.write(header+'\n')
+        for name,logit in zip(names,predictions):
+            f.write(name+',')
+            for i,element in enumerate(logit):
+                if i == logit.shape[0]-1: f.write(str(element)+'\n')
+                else: f.write(str(element)+',')
+
 
 def get_split_data(csv_file_path):
     # ** Returns image file paths and corresponding labels from csv file as lists **
