@@ -9,13 +9,14 @@ import os
 import image_manipulation as imanip
 
 def read_paths(path, no_labels=False, label_type=None):
-    # ** Takes a root path and returns all of the file
-    # paths within the root directory. It uses the
+    # ** Takes a directory path and returns all of the file
+    # paths within the directory. It uses the
     # subdirectories to create a corresponding label array **
 
-    # path - the path to the root directory
-    # no_labels - optional argument to use file
+    # path - string of path to the root directory
+    # no_labels - optional boolean to use file
     #             names as labels instead of subdirectory
+    # label_type - optional integer label for all paths to be read in
 
     file_paths = []
     labels = []
@@ -46,7 +47,7 @@ def save_paths(csv_file_path, paths, labels):
 
     # csv_file_path - string of file path to save information to
     # paths - list of image file paths as strings
-    # labels - list of corresponding label types for images
+    # labels - list of corresponding label integers for images
 
     with open(csv_file_path, 'w') as csv_file:
         for path,label in zip(paths,labels):
@@ -56,7 +57,7 @@ def save_paths(csv_file_path, paths, labels):
 def get_split_data(csv_file_path):
     # ** Returns image file paths and corresponding labels from csv file as lists **
 
-    # csv_file - string of file path to save information to
+    # csv_file_path - string of file path to save information to
 
     paths = []
     labels = []
@@ -71,10 +72,10 @@ def convert_images(paths, labels, resize_dims=None, randomly_augment=False):
     # ** Reads in images from their paths, returns the images with their
     #   corresponding labels. **
 
-    # paths - the file paths to the images
-    # labels - a numpy array of the corresponding labels to the images
-    # resize_dims - tuple of output dimensions to resize image without
-    #               maintaining aspect ratio
+    # paths - list of file paths to the images as strings
+    # labels - a numpy array or list of the corresponding labels to the images
+    # resize_dims - tuple of integer output dimensions to resize image.
+    #               (does not maintain aspect ratio)
     # randomly_augment - optional boolean to add randomly rotated,
     #                    translated, and scaled images to the output
 
@@ -103,7 +104,7 @@ def convert_images(paths, labels, resize_dims=None, randomly_augment=False):
                     sub_index = -2
                 img = imanip.random_augment(images[sub_index])
                 labels[i] = labels[i-1]
-                
+
         images.append(img)
         if randomly_augment:
             images.append(imanip.random_augment(img))
@@ -115,19 +116,19 @@ def convert_images(paths, labels, resize_dims=None, randomly_augment=False):
 
 
 def image_generator(file_paths, labels, batch_size, resize_dims=None, randomly_augment=False):
-    # ** Generator function to convert image file paths to images with labels in batches. **
+    # ** Generator to convert image file paths to batches of images with labels. **
 
     # file_paths - an array of the image file paths as strings
     # labels - a numpy array of labels for the corresponding images
-    # batch_size - the desired size of the batch to be returned at each yield
-    # resize_dims - the desired x and y dimensions of the images to be read in
-    # add_zooms - optional parameter add an additional randomly zoomed image to the batch for each file path
-    # randomly_augment - optional parameter add an additional randomly rotated, translated,
-    #         and zoomed image to the batch for each file path
+    # batch_size - integer of size of the batch to be returned at each yield
+    # resize_dims - tuple of the desired x and y dimensions of the images
+    # randomly_augment - boolean to add a randomly rotated, translated,
+    #                   and zoomed version of each image to the batch
 
     if randomly_augment:
-        batch_size = int(batch_size/2) # the other half of the batch is filled with augmentations
-    while 1:
+        batch_size = int(batch_size/2) # maintains batch size despite image additions
+
+    while True:
         file_paths,labels = shuffle(file_paths,labels)
         for batch in range(0, len(file_paths), batch_size):
             images, batch_labels = convert_images(file_paths[batch:batch+batch_size],
