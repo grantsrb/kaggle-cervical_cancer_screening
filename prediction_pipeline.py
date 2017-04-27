@@ -2,17 +2,28 @@ import time
 
 import inout
 import prediction as pred
+import model as mod
 
 from multiprocessing.pool import ThreadPool
 
-path = './data/test'
-test_paths, test_labels = read_paths(path,no_labels=True)
-print(str(len(test_paths))+' testing images')
-
+############### User Defined Variables
+data_path = './data/test'
+model_path = 'model.h5'
 test_divisions = 30 # Used for segmenting image evaluation in threading
-predictions = []
 batch_size = 128 # Batch size used for keras predict function
 
+############## Create Model
+ins, outs = mod.cnn_model()
+model = Model(inputs=ins,outputs=outs)
+model.load_weights(model_path)
+
+############# Read in Data
+test_paths, test_labels = read_paths(data_path,no_labels=True)
+print(str(len(test_paths))+' testing images')
+
+
+############# Make Predictions
+predictions = []
 pool = ThreadPool(processes=1)
 portion = len(test_paths)//test_divisions+1 # Number of images to read in per pool
 
@@ -37,6 +48,8 @@ for i in range(1,test_divisions+1):
 
 predictions = np.concatenate(predictions, axis=0)
 print("Total Execution Time: " + str((time.time()-total_base_time)/60)+'mins')
+
+############### Adjust confidence and Save Predictions
 
 conf = .95 # Prediction confidence
 predictions = pred.confidence(predictions, conf)
