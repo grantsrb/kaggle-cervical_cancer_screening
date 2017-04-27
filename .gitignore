@@ -1,3 +1,5 @@
 train/
 *.csv
 model.h5
+__pycache__
+test.py
