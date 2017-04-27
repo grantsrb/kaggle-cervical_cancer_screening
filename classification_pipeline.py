@@ -12,8 +12,8 @@ import image_manipulation as imanip
 n_labels = 3
 first_conv_shapes = [(4,4),(3,3),(5,5)]
 conv_shapes = [(3,3),(5,5)]
-conv_depths = [16,12,10,8]
-dense_shapes = [150,70,30,n_labels]
+conv_depths = [12,12,11,8,8]
+dense_shapes = [100,50,n_labels]
 
 image_shape = (256,256,3)
 
@@ -98,10 +98,9 @@ for i in range(len(dense_shapes)-1):
 outs = Dense(dense_shapes[-1], activation='softmax')(fclayer)
 
 model = Model(inputs=inputs,outputs=outs)
-learning_rate = .00001
+model.load_weights('model.h5')
+learning_rate = .0001
 for i in range(10):
-    if i > 5:
-        learning_rate = .001
     adam_opt = optimizers.Adam(lr=learning_rate)
     model.compile(loss='categorical_crossentropy', optimizer=adam_opt, metrics=['accuracy'])
     history = model.fit_generator(train_generator, train_steps_per_epoch, epochs=1,
