@@ -68,25 +68,25 @@ def get_split_data(csv_file_path):
     return paths,labels
 
 def convert_images(paths, labels, resize_dims=None, randomly_augment=False):
-    # ** Reads in images from their paths, resizes the images and returns
-    # the images with their corresponding labels. **
+    # ** Reads in images from their paths, returns the images with their
+    #   corresponding labels. **
 
     # paths - the file paths to the images
     # labels - a numpy array of the corresponding labels to the images
-    # resize_dims - the resizing dimensions for the image
-    # add_zooms - optional parameter to add randomly scaled copies of the images to the output
-    # randomly_augment - optional parameter to add randomly rotated,
+    # resize_dims - tuple of output dimensions to resize image without
+    #               maintaining aspect ratio
+    # randomly_augment - optional boolean to add randomly rotated,
     #                    translated, and scaled images to the output
 
     images = []
     new_labels = []
     for i,path in enumerate(paths):
-        label = labels[i]
         try:
             img = mpimg.imread(path)
             if resize_dims:
                 img = sci.imresize(img, resize_dims)
         except OSError:
+            # Uses augmented version of next image in list
             if i == 0:
                 img = mpimg.imread(paths[i+1])
                 if resize_dims:
@@ -95,18 +95,20 @@ def convert_images(paths, labels, resize_dims=None, randomly_augment=False):
                 else:
                     img = imanip.random_augment(img)
                 labels[i] = labels[i+1]
+
+            # Uses most recent original image
             elif i > 0:
                 sub_index = -1
                 if randomly_augment:
                     sub_index = -2
                 img = imanip.random_augment(images[sub_index])
                 labels[i] = labels[i-1]
-            label = labels[i]
+                
         images.append(img)
         if randomly_augment:
             images.append(imanip.random_augment(img))
-            new_labels.append(label)
-            new_labels.append(label)
+            new_labels.append(labels[i])
+            new_labels.append(labels[i])
     if randomly_augment:
         return np.array(images,dtype=np.float32), np.array(new_labels,dtype=np.float32)
     return np.array(images,dtype=np.float32), labels
