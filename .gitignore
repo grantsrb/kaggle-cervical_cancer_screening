@@ -1,3 +1,4 @@
+cervical_classification.ipynb
 train/
 *.csv
 data
@@ -5,3 +6,6 @@ Type_1
 Type_2
 Type_3
 test
+model.h5
+__pycache__
+test.py
