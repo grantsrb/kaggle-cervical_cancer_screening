@@ -16,6 +16,16 @@ def show(img):
     plt.show()
 
 def resize(path, maxsize=(256,256,3), save_path=None, add_flip=False):
+    # ** Takes an image file path, reads in the image, and resizes the image to
+    #   the specified dimensions without distortion. **
+
+    # path - image file path to be read and resized
+    # maxsize - the dimensions to be resized to
+    # save_path - optional path to save resized image to
+    # add_flip - if marked true, a mirrored copy of the image is also created. If
+    #           a save_path is given, the flipped image will be saved to the same
+    #           path but with 'flipped_' placed infront of the file name.
+
     img = Image.open(path)
     img.thumbnail(maxsize, PIL.Image.ANTIALIAS)
     rand_img = (np.random.random(maxsize)*255).astype(np.uint8)
@@ -95,6 +105,7 @@ def random_zoom(image, max_zoom=1/3.):
     zoom_factor = 1 + (random.random()-0.5)*max_zoom
     while zoom_factor == 1:
         zoom_factor = 1 + (random.random()-0.5)*max_zoom
+
     # scipy's zoom function returns different size array
     # The following code ensures the zoomed image has same pixel size as initial image
     img_height, img_width = image.shape[:2]
@@ -118,17 +129,18 @@ def random_zoom(image, max_zoom=1/3.):
         zoom_img = np.random.random(image.shape)*color_range # Random pixels instead of black space for out zoom
         zoom_img[start_row:start_row+temp_height,
                  start_col:start_col+temp_width] = temp[:,:]
-    else:
-        return image.copy()
+
     return zoom_img.astype(np.float32)
 
-def random_augment(image, rotation_limit=180, shift_limit=10, zoom_limit=1/3.):
+def random_augment(image, rotation_limit=180, shift_limit=10,
+                    zoom_limit=1/3., random_fill=True):
     # ** Returns a randomly rotated, translated, or scaled copy of an image. **
 
     # image - source image as numpy array to be randomly augmented
     # rotation_limit - maximum rotation degree in either direction
     # shift_limit - maximum translation amount in either direction
     # zoom_limit - maximum scaling amount in either direction
+    # random_fill - adds random values to empty pixels after rotation.
 
     augmentation_type = random.randint(0,2)
 
@@ -137,16 +149,16 @@ def random_augment(image, rotation_limit=180, shift_limit=10, zoom_limit=1/3.):
         random_angle = random.randint(-rotation_limit,rotation_limit)
         while random_angle == 0:
             random_angle = random.randint(-rotation_limit,rotation_limit)
-        aug_image = rotate(image,random_angle,random_fill=False)
+        aug_image = rotate(image,random_angle,random_fill=random_fill)
 
+    # Translation
     elif augmentation_type == 1:
-        # Translation
         row_shift = random.randint(-shift_limit, shift_limit)
         col_shift = random.randint(-shift_limit, shift_limit)
         aug_image = translate(image,row_shift,col_shift)
 
+    # Scale
     else:
-        # Scale
         aug_image = random_zoom(image,max_zoom=zoom_limit)
 
     return aug_image
