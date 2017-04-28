@@ -28,6 +28,6 @@ for i,path,label in zip(count(),image_paths,labels):
     if label == 1:
         add_flip = False
     try:
-        resize(path, save_path=new_path, add_flip=add_flip)
+        imanip.resize(path, save_path=new_path, add_flip=add_flip)
     except OSError:
         print("Error at path " + path)

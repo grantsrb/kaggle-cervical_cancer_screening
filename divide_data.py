@@ -1,4 +1,5 @@
 import inout
+from sklearn.utils import shuffle
 
 root_path = 'resized/train'
 image_paths, labels, n_labels = inout.read_paths(root_path)
@@ -12,7 +13,7 @@ for i,root_path in enumerate(root_paths):
 image_paths, labels = shuffle(image_paths, labels)
 
 training_portion = .8
-split_index = training_portion*len(image_paths)
+split_index = int(training_portion*len(image_paths))
 X_train_paths, y_train = image_paths[:split_index], labels[:split_index]
 X_valid_paths, y_valid = image_paths[split_index:], labels[split_index:]
 
