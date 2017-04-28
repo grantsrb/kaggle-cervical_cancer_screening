@@ -7,9 +7,10 @@ def confidence(predictions,conf):
 
     for i,prediction in enumerate(predictions):
         max_i = max_index(prediction)
-        predictions[i][max_index] = conf
+        predictions[i][max_i] = conf
         for j in range(len(prediction)):
-            if j != max_index: predictions[i][j] = (1-conf)/(len(prediction)-1)
+            if j != max_i:
+                predictions[i][j] = (1-conf)/(len(prediction)-1)
     return predictions
 
 def max_index(array):

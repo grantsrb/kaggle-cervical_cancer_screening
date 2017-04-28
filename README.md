@@ -5,9 +5,6 @@
 
 _April 27th, 2017 Performance Update: Model is achieving ~60% accuracy on validation set.
 Pipeline Improvement TODO:
-* Anneal learning rate
-* Increase Type 1 image count
-* Remove zoom-in scaling
 * Visualize correct and incorrect predictions
 * Pseudo Labeling
 * Transfer Learning

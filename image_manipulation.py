@@ -15,22 +15,22 @@ def show(img):
     plt.imshow(img)
     plt.show()
 
-def resize(path, maxsize=(256,256,3), save_path=None, add_flip=False):
+def resize(path, maxsizes=(256,256,3), save_path=None, add_flip=False):
     # ** Takes an image file path, reads in the image, and resizes the image to
     #   the specified dimensions without distortion. **
 
     # path - image file path to be read and resized
-    # maxsize - the dimensions to be resized to
+    # maxsizes - the dimensions to be resized to
     # save_path - optional path to save resized image to
     # add_flip - if marked true, a mirrored copy of the image is also created. If
     #           a save_path is given, the flipped image will be saved to the same
     #           path but with 'flipped_' placed infront of the file name.
 
     img = Image.open(path)
-    img.thumbnail(maxsize, PIL.Image.ANTIALIAS)
-    rand_img = (np.random.random(maxsize)*255).astype(np.uint8)
+    img.thumbnail(maxsizes, PIL.Image.ANTIALIAS)
+    rand_img = (np.random.random(maxsizes)*255).astype(np.uint8)
     padded_img = Image.fromarray(rand_img)
-    padded_img.paste(img, ((maxsize[0]-img.size[0])//2,(maxsize[1]-img.size[1])//2))
+    padded_img.paste(img, ((maxsizes[0]-img.size[0])//2,(maxsizes[1]-img.size[1])//2))
     if save_path:
         padded_img.save(save_path)
     if add_flip:
@@ -43,6 +43,11 @@ def resize(path, maxsize=(256,256,3), save_path=None, add_flip=False):
     return np.array(padded_img, dtype=np.float32)
 
 def change_brightness(image, delta):
+    # ** Adds delta to each pixel in image. Pixel values stop at 255 **
+
+    # image - image as numpy array
+    # delta - amount to add to each pixel
+
     img = np.where((255 - image) < delta,255,image+delta) # avoids negative values
     return img
 
@@ -98,15 +103,19 @@ def translate(img, row_amt, col_amt, color_range=255):
             return img.copy()
     return translation
 
-def random_zoom(image, max_zoom=1/3.):
-    # ** Returns a randomly zoomed (scaled) copy of an image within the scaling amount.
-    # if the scaling zooms outward, the empty space is filled with random values **
+def random_zoom(image, max_zoom=1/6., allow_out_zooms=False):
+    # ** Returns a randomly zoomed (scaled) copy of an image. If the
+    #   scaling zooms outward, the empty space is filled with random values **
 
     # image - the source image as numpy array to be scaled
-    # max_zoom - the maximum scaling amount in either direction
+    # max_zoom - float of the maximum scaling amount in either direction
+    # allow_out_zooms - boolean determining if outward zooming is permitted
 
     color_range = 255
-    zoom_factor = 1 + (random.random()-0.5)*max_zoom
+    if allow_out_zooms:
+        zoom_factor = 1 + (random.random()-.5)*max_zoom*2
+    else:
+        zoom_factor = 1 + random.random()*max_zoom
     while zoom_factor == 1:
         zoom_factor = 1 + (random.random()-0.5)*max_zoom
 
