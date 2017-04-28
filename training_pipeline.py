@@ -27,15 +27,6 @@ X_train_paths, y_train = inout.get_split_data(training_csv)
 X_valid_paths, y_valid = inout.get_split_data(valid_csv)
 n_labels = max(y_train)+1
 
-print(len(X_train_paths)) 
-for dir_name, sdir, f_list in os.walk('./resized'):
-	if 'Type_1' in dir_name:
-		for f in f_list:		
-			if '.jpg' in f and 'b15' in f:
-				X_train_paths.append(os.path.join(dir_name,f))
-				y_train.append(0)
-print(len(X_train_paths)) 
-
 y_train = imanip.one_hot_encode(y_train, n_labels)
 y_valid = imanip.one_hot_encode(y_valid, n_labels)
 
@@ -76,7 +67,7 @@ model = Model(inputs=inputs,outputs=outs)
 model.load_weights('gpu_model.h5')
 learning_rate = .001
 for i in range(20):
-    if i > 5:
+    if i > 4:
         learning_rate = .0001
     adam_opt = optimizers.Adam(lr=learning_rate)
     model.compile(loss='categorical_crossentropy', optimizer=adam_opt, metrics=['accuracy'])
