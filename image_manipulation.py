@@ -42,7 +42,7 @@ def resize(path, maxsize=(256,256,3), save_path=None, add_flip=False):
         return np.array(padded_img, dtype=np.float32), np.array(flip,dtype=np.float32)
     return np.array(padded_img, dtype=np.float32)
 
-def change_brightness(image_path, delta):
+def change_brightness(image, delta):
     img = np.where((255 - image) < delta,255,image+delta) # avoids negative values
     return img
 
