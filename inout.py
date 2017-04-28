@@ -155,11 +155,13 @@ def image_generator(file_paths, labels, batch_size, resize_dims=None, randomly_a
                                                   randomly_augment=randomly_augment)
             yield images, batch_labels
 
+
 def save_brightness(path,delta):
     img = mpimg.imread(path)
     sunshine = imanip.change_brightness(img,delta)
     save_img = Image.fromarray(sunshine.astype(np.uint8))
     split_path = path.split('/')
-    split_path[-1] = 'b'+str(delta)+path
+    split_path[-1] = 'b'+str(delta)+split_path[-1]
     new_path = '/'.join(split_path)
     save_img.save(new_path)
+
