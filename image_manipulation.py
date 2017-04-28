@@ -98,15 +98,19 @@ def translate(img, row_amt, col_amt, color_range=255):
             return img.copy()
     return translation
 
-def random_zoom(image, max_zoom=1/3.):
-    # ** Returns a randomly zoomed (scaled) copy of an image within the scaling amount.
-    # if the scaling zooms outward, the empty space is filled with random values **
+def random_zoom(image, max_zoom=1/6., allow_out_zooms=False):
+    # ** Returns a randomly zoomed (scaled) copy of an image. If the
+    #   scaling zooms outward, the empty space is filled with random values **
 
     # image - the source image as numpy array to be scaled
-    # max_zoom - the maximum scaling amount in either direction
+    # max_zoom - float of the maximum scaling amount in either direction
+    # allow_out_zooms - boolean determining if outward zooming is permitted
 
     color_range = 255
-    zoom_factor = 1 + (random.random()-0.5)*max_zoom
+    if allow_out_zooms:
+        zoom_factor = 1 + (random.random()-.5)*max_zoom*2
+    else:
+        zoom_factor = 1 + random.random()*max_zoom
     while zoom_factor == 1:
         zoom_factor = 1 + (random.random()-0.5)*max_zoom
 
