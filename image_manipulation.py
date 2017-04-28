@@ -42,6 +42,10 @@ def resize(path, maxsize=(256,256,3), save_path=None, add_flip=False):
         return np.array(padded_img, dtype=np.float32), np.array(flip,dtype=np.float32)
     return np.array(padded_img, dtype=np.float32)
 
+def change_brightness(image_path, delta):
+    img = image.astype(np.float32)
+    return img + delta
+
 def rotate(image, angle, ones=None, random_fill=True, color_range=255):
     # ** Rotates an image by the specified angle amount
     # and fills in resulting space with random values **
