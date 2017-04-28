@@ -4,6 +4,8 @@ import matplotlib.image as mpimg
 from sklearn.utils import shuffle
 import scipy.misc as sci
 import os
+from PIL import Image
+import PIL
 
 # Internal Imports
 import image_manipulation as imanip
