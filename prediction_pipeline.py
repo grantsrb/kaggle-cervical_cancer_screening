@@ -8,10 +8,10 @@ import model as mod
 from multiprocessing.pool import ThreadPool
 
 ############### User Defined Variables
-data_path = './resized'
-model_path = 'model.h5'
+data_path = './test'
+model_path = 'gpu_model_update.h5'
 resize_dims = (256,256,3)
-test_divisions = 10 # Used for segmenting image evaluation in threading
+test_divisions = 20 # Used for segmenting image evaluation in threading
 batch_size = 100 # Batch size used for keras predict function
 
 ############## Create Model
