@@ -4,6 +4,8 @@ import matplotlib.image as mpimg
 from sklearn.utils import shuffle
 import scipy.misc as sci
 import os
+from PIL import Image
+import PIL
 
 # Internal Imports
 import image_manipulation as imanip
@@ -159,7 +161,7 @@ def save_brightness(path,delta):
     sunshine = imanip.change_brightness(img,delta)
     save_img = Image.fromarray(sunshine.astype(np.uint8))
     split_path = path.split('/')
-    split_path[-1] = 'b'+str(delta)+path
+    split_path[-1] = 'b'+str(delta)+split_path[-1]
     new_path = '/'.join(split_path)
     save_img.save(new_path)
 
