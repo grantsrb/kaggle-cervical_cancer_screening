@@ -12,11 +12,11 @@ new_img_shape = (256,256,3)
 path = 'train'
 image_paths, labels, n_labels = inout.read_paths(path)
 
-root_paths = ['Type_1', 'Type_2', 'Type_3']
-for i,root_path in enumerate(root_paths):
-    new_paths, new_labels, _ = inout.read_paths(root_path,label_type=i)
-    image_paths += new_paths
-    labels += new_labels
+# root_paths = ['Type_1', 'Type_2', 'Type_3']
+# for i,root_path in enumerate(root_paths):
+#     new_paths, new_labels, _ = inout.read_paths(root_path,label_type=i)
+#     image_paths += new_paths
+#     labels += new_labels
 
 # Resize and save images to same path in 'resized' folder
 # If of Cervix type 1 or 3, a mirrored image is additionally saved
