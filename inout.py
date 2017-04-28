@@ -60,7 +60,7 @@ def save_predictions(csv_file_path, names, predictions, header=None):
     # names - list of the test image file names as strings
     # predictions - list of one_hot encoded predictions
     # header - first line of csv as string
-    
+
     with open(csv_file_path, 'w') as f:
         f.write(header+'\n')
         for name,logit in zip(names,predictions):
@@ -152,3 +152,13 @@ def image_generator(file_paths, labels, batch_size, resize_dims=None, randomly_a
                                                   resize_dims=resize_dims,
                                                   randomly_augment=randomly_augment)
             yield images, batch_labels
+
+def save_brightness(paths,delta):
+    for path in paths:
+        img = mpimg.imread(path)
+        sunshine = imanip.change_brightness(img,delta)
+        save_img = Image.fromarray(sunshine)
+        split_path = path.split('/')
+        split_path[-1] = 'b'+str(delta)+path
+        new_path = '/'.join(split_path)
+        save_img.save(new_path)
