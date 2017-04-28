@@ -42,7 +42,7 @@ def read_paths(path, no_labels=False, label_type=None):
                 else: labels.append(labels_to_nums[type_])
 
     if type(n_labels) is int: return file_paths, labels, n_labels
-    else: return file_paths, labels, max(labels)+1
+    else: return file_paths, labels, None
 
 def save_paths(csv_file_path, paths, labels):
     # ** Saves each path and label to a line in the given csv file **
@@ -86,7 +86,7 @@ def get_split_data(csv_file_path):
             labels.append(int(split_line[1]))
     return paths,labels
 
-def convert_images(paths, labels, resize_dims=None, randomly_augment=False):
+def convert_images(paths, labels, resize_dims=None, warp_ok=False, randomly_augment=False):
     # ** Reads in images from their paths, returns the images with their
     #   corresponding labels. **
 
@@ -94,6 +94,7 @@ def convert_images(paths, labels, resize_dims=None, randomly_augment=False):
     # labels - a numpy array or list of the corresponding labels to the images
     # resize_dims - tuple of integer output dimensions to resize image.
     #               (does not maintain aspect ratio)
+    # warp_ok - boolean to select if image resize should maintain the aspect ratio
     # randomly_augment - optional boolean to add randomly rotated,
     #                    translated, and scaled images to the output
 
@@ -101,18 +102,22 @@ def convert_images(paths, labels, resize_dims=None, randomly_augment=False):
     new_labels = []
     for i,path in enumerate(paths):
         try:
-            img = mpimg.imread(path)
-            if resize_dims:
-                img = sci.imresize(img, resize_dims)
+            if resize_dims and not warp_ok:
+                img = imanip.resize(path,maxsizes=resize_dims)
+            else:
+                img = mpimg.imread(path)
+                if resize_dims:
+                    img = sci.imresize(img, resize_dims)
         except OSError:
             # Uses augmented version of next image in list
             if i == 0:
-                img = mpimg.imread(paths[i+1])
-                if resize_dims:
-                    img = sci.imresize(img, resize_dims)
-                    img = imanip.random_augment(img)
+                if resize_dims and not warp_ok:
+                    img = imanip.resize(paths[i+1],maxsizes=resize_dims)
                 else:
-                    img = imanip.random_augment(img)
+                    img = mpimg.imread(paths[i+1])
+                    if resize_dims:
+                        img = sci.imresize(img, resize_dims)
+                img = imanip.random_augment(img)
                 labels[i] = labels[i+1]
 
             # Uses most recent original image
@@ -121,7 +126,7 @@ def convert_images(paths, labels, resize_dims=None, randomly_augment=False):
                 if randomly_augment:
                     sub_index = -2
                 img = imanip.random_augment(images[sub_index])
-                labels[i] = labels[i-1]
+                labels[i] = labels[i-sub_index]
 
         images.append(img)
         if randomly_augment:
@@ -164,4 +169,3 @@ def save_brightness(path,delta):
     split_path[-1] = 'b'+str(delta)+split_path[-1]
     new_path = '/'.join(split_path)
     save_img.save(new_path)
-
