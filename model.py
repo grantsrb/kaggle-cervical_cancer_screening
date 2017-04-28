@@ -3,7 +3,7 @@ from keras.layers import Conv2D, MaxPooling2D, Dense, Input, Flatten, Dropout, c
 from keras.layers.normalization import BatchNormalization
 
 
-def cnn_model(first_conv_shapes=[(4,4),(3,3),(5,5)], conv_shapes=[(3,3),(5,5)], conv_depths=[12,12,11,8,8], dense_shapes=[100,50,n_labels], image_shape=(256,256,3), n_labels=3):
+def cnn_model(first_conv_shapes=[(4,4),(3,3),(5,5)], conv_shapes=[(3,3),(5,5)], conv_depths=[12,12,11,8,8], dense_shapes=[100,50,3], image_shape=(256,256,3), n_labels=3):
     stacks = []
     pooling_filter = (2,2)
     pooling_stride = (2,2)
