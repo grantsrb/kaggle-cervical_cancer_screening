@@ -19,3 +19,18 @@ def max_index(array):
     for j in range(1,len(array)):
         if array[j] > array[max_i]: max_i = j
     return max_i
+
+
+def get_steps(n_samples,batch_size,n_augs=1):
+    # ** Returns number of generation steps in a single epoch for a sample set **
+
+    # n_samples - integer of number of samples in the dataset
+    # n_augs - boolean denoting if random augmentations will be added per data pt
+
+    n_samples = n_samples*(n_augs+1)
+
+    steps_per_epoch = n_samples//batch_size + 1
+
+    if n_samples % batch_size == 0:
+        train_steps_per_epoch = n_samples//batch_size
+    return steps_per_epoch

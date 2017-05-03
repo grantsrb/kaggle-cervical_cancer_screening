@@ -2,14 +2,14 @@ import time
 import numpy as np
 
 import inout
-import prediction as pred
+import miscellaneous as misc
 import model as mod
 
 from multiprocessing.pool import ThreadPool
 
 ############### User Defined Variables
-data_path = './resized'
-model_path = 'model.h5'
+data_path = '/Volumes/WhiteElephant/cervical_cancer/test'
+model_path = 'model_update.h5'
 resize_dims = (256,256,3)
 test_divisions = 10 # Used for segmenting image evaluation in threading
 batch_size = 100 # Batch size used for keras predict function
@@ -59,7 +59,7 @@ print("Total Execution Time: " + str((time.time()-total_base_time)/60)+'mins')
 ############### Adjust confidence and Save Predictions
 
 conf = .95 # Prediction confidence
-predictions = pred.confidence(predictions, conf)
+predictions = misc.confidence(predictions, conf)
 
 header = 'image_name,Type_1,Type_2,Type_3'
 inout.save_predictions('submission.csv', test_labels, predictions, header)

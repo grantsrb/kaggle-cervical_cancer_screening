@@ -27,20 +27,31 @@ def resize(path, maxsizes=(256,256,3), save_path=None, add_flip=False):
     #           path but with 'flipped_' placed infront of the file name.
 
     img = Image.open(path)
-    img.thumbnail(maxsizes, PIL.Image.ANTIALIAS)
-    rand_img = (np.random.random(maxsizes)*255).astype(np.uint8)
-    padded_img = Image.fromarray(rand_img)
-    padded_img.paste(img, ((maxsizes[0]-img.size[0])//2,(maxsizes[1]-img.size[1])//2))
+    resized_img = ratioresize(img,maxsizes)
     if save_path:
-        padded_img.save(save_path)
+        resized_img.save(save_path)
     if add_flip:
-        flip = padded_img.transpose(Image.FLIP_LEFT_RIGHT)
+        flip = resized_img.transpose(Image.FLIP_LEFT_RIGHT)
         if save_path:
             split_path = save_path.split('/')
             flip_path = '/'.join(split_path[:-1] + ['flipped_'+split_path[-1]])
             flip.save(flip_path)
-        return np.array(padded_img, dtype=np.float32), np.array(flip,dtype=np.float32)
-    return np.array(padded_img, dtype=np.float32)
+        return np.array(resized_img, dtype=np.float32), np.array(flip,dtype=np.float32)
+    return np.array(resized_img, dtype=np.float32)
+
+def ratioresize(img, maxsizes):
+    # ** Takes image as PIL image or numpy array and resizes the image maintaining
+    #   the aspect ratio **
+
+    # img - image as PIL image or numpy array
+
+    if type(img) == type(np.array([])):
+        img = Image.fromarray(img)
+    img.thumbnail(maxsizes, PIL.Image.ANTIALIAS)
+    rand_img = (np.random.random(maxsizes)*255).astype(np.uint8)
+    padded_img = Image.fromarray(rand_img)
+    padded_img.paste(img, ((maxsizes[0]-img.size[0])//2,(maxsizes[1]-img.size[1])//2))
+    return padded_img
 
 def change_brightness(image, delta):
     # ** Adds delta to each pixel in image. Pixel values stop at 255 **

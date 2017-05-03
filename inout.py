@@ -190,7 +190,7 @@ def convert_randoms(paths, labels, resize_dims=None, warp_ok=False):
 
 
 
-def image_generator(file_paths, labels, batch_size, resize_dims=None, randomly_augment=False):
+def image_generator(file_paths, labels, batch_size, resize_dims=None, randomly_augment=False,rand_order=True):
     # ** Generator to convert image file paths to batches of images with labels. **
 
     # file_paths - an array of the image file paths as strings
@@ -208,8 +208,9 @@ def image_generator(file_paths, labels, batch_size, resize_dims=None, randomly_a
         aug_paths, aug_labels = [], []
 
     while True:
-        file_paths,labels = shuffle(file_paths,labels)
-        aug_paths, aug_labels = shuffle(aug_paths, aug_labels)
+        if rand_order:
+            file_paths,labels = shuffle(file_paths,labels)
+            aug_paths, aug_labels = shuffle(aug_paths, aug_labels)
         for batch in range(0, len(file_paths), batch_size):
             rpaths = []
             rlabels = []
@@ -224,13 +225,66 @@ def image_generator(file_paths, labels, batch_size, resize_dims=None, randomly_a
             yield images, batch_labels
 
 
+def pseudo_generator(paths, labels, pseudo_paths, pseudo_labels,
+                     batch_size, resize_dims=None, pseudo_fraction=1/4., randomly_augment=True, rand_order=True):
+
+    # ** generates batches of trainable data with a pseudo_fraction of psuedo data **
+
+    # paths are the labeled image paths, labels are the labels for the labeled images
+    # pseudo_paths are the unlabeled image paths, pseudo_labels are the model predictions for the unlabeled images
+    # batch_size is the size of the generated images and labels
+    # pseudo_fraction is the fraction of pseudo labeled images in each batch
+
+    pseudo_batch_size = int(batch_size*pseudo_fraction)
+    labeled_batch_size = batch_size-pseudo_batch_size
+
+    if randomly_augment:
+        batch_size = int(batch_size/2)
+        labeled_batch_size = int(labeled_batch_size/2)
+        aug_paths = paths.copy()
+        aug_labels = labels.copy()
+    else:
+        aug_paths = []
+        aug_labels = []
+
+    while True:
+        if rand_order:
+            paths, labels = shuffle(paths, labels)
+            pseudo_paths, pseudo_labels = shuffle(pseudo_paths, pseudo_labels)
+        for batch in range(0,len(paths),labeled_batch_size):
+            if randomly_augment:
+                rpaths = aug_paths[batch:batch+labeled_batch_size]
+                rlabels = aug_labels[batch:batch+labeled_batch_size]
+            p_batch_paths = pseudo_paths[batch:batch+pseudo_batch_size]
+            p_batch_labels = pseudo_labels[batch:batch+pseudo_batch_size]
+
+            if len(p_batch_paths) > 0 and len(p_batch_labels) > 0:
+                batch_paths = paths[batch:batch+labeled_batch_size]
+                batch_labels = np.concatenate((labels[batch:batch+labeled_batch_size],
+                                               p_batch_labels),
+                                               axis=0)
+            else:
+                batch_paths = paths[batch:batch+batch_size]
+                batch_labels = labels[batch:batch+batch_size]
+                if randomly_augment:
+                    rpaths = aug_paths[batch:batch+batch_size]
+                    rlabels = aug_labels[batch:batch+batch_size]
+
+            images, batch_labels = convert_images(batch_paths,
+                                                batch_labels,
+                                                resize_dims,
+                                                rpaths=rpaths,
+                                                rlabels=rlabels)
+            yield images, batch_labels
+
+
 def save_brightness(path,delta):
     # ** Reads image from path, changes brightness, saves image to file with under
     #   new path
 
     # path - string of image fil path
     # delta - pixel value change as float
-    
+
     img = mpimg.imread(path)
     sunshine = imanip.change_brightness(img,delta)
     save_img = Image.fromarray(sunshine.astype(np.uint8))
