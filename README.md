@@ -3,17 +3,43 @@
 ## Satchel Grant
 
 
-_April 27th, 2017 Performance Update: Model is achieving ~60% accuracy on validation set.
-Pipeline Improvement TODO:
-* Visualize correct and incorrect predictions
-* Pseudo Labeling
-* Transfer Learning
-* Ensembling_
+_May 3rd, 2017 Performance Update: Model is achieving ~65% accuracy on validation set._
 
 ## Overview
 This is a project to use the medical images provided by Kaggle, Intel, and MobileODT to create a classification pipeline for cervical type. This can be useful for determining treatments and testing procedures when treating and diagnosing cervical cancer.
 
 The pipeline in this project uses a Convolutional Neural Net (CNN) model written in Python using the Keras functional API for image classification. The model also uses various image manipulation libraries. The rest of this readme walks you through the different parts of the project.
+
+## Improvement TODO
+
+My current plan to improve results consists of the following.
+
+#### Add 1x1 Convolution Layers
+First, I recently learned why Google's inception net uses 1x1 convolutions before running their 3x3 and 5x5 kernels. The reason is that a 1x1 convolution can effectively maxpool the depth of a layer which can reduce the computational power needed to use and train the net. A layer that has a depth of 60 can be unwieldy for both a 3x3 and 5x5 filter to convolve. A 1x1 filter can effectively reduce the depth to something more manageable. Additionally this step adds another nonlinearity (elu or otherwise) which can help the model. So I plan on constructing a new model with these considerations in mind.
+
+#### Increase Depths
+Another thing worth considering is increasing the total depth of the model and increasing the depth of later layers. I currently have the depths of each layer consecutively decrease. This was under the thought that there are fewer features to look for later in the net after the initial features have been noticed correctly. This, however, is potentially wrong. In Imagenet classification, the models often have increasing depth later in the process which, [when visualized](http://yosinski.com/deepvis), seem to be building increasing possibilities off of more basic features in past convolutional layers. Greater depth in both the total architecture and the layers will hopefully improve the model's ability to classify cervixes.
+
+#### Visualize Layers
+To know if the above two potential improvements are working, it would be prudent to actually visualize what they are detecting. Visualization should help inform what types of layers are working and what are not. The one problem with this is that I have no idea how to classify the different types of cervixes. Thus seeing the visualizations may give me limited useful information.
+
+#### Pseudo Labeling
+This is a semi-suprevised learning technique. The goal is to use the unlabeled test data as training data to improve test predictions. After the model has been somewhat trained on the training set, the test data can be included in training by using the test predictions as their labels giving them "pseudo-labels".
+
+In theory, the classifier can find structure in the pseudo-labeled data to help with classification. Some big questions are, how much pseudo labeling should be included in each epoch? In each batch? At what classification accuracies does pseudo labeling help? What types of datasets lend themselves more readily to pseudo labeling?
+
+According to [these guys](https://www.researchgate.net/publication/280581078_Pseudo-Label_The_Simple_and_Efficient_Semi-Supervised_Learning_Method_for_Deep_Neural_Networks), all of the unlabeled data should be used as pseudo data. The loss, however, should be calculated separately from the labeled data and multiplied by a constant. The intensity of this constant should increase as the model makes better and better predictions about the unlabeled data. This way, the model places increasing significance on the pseudo training as the pseudo labels get better and better.
+
+An important implementation note is that the pseudo labels (the test set predictions) should be updated with each epoch. Another note is that I tried this technique for 2 epochs while using 50% training and 50% pseudo data for each training batch.
+
+I'm actually unsure how to use different weights for different training data, so I may do a more rudimentary version of this technique.
+
+#### Transfer Learning
+A potential huge improvement would be to use a previously trained model that has been honed for Imagenet. Vast resources have been poured into training these models. It is easy to take and use their convolutional layers as the backbone of a new model. We can then append both fully connected (dense) and convolutional layers to the model and train only the added layers. It is most common to only add fully connected layers. I haven't done this yet simply because I wanted to develop a greater intuition for how the entire model works.
+
+#### Ensembling
+A final thing that I may try (but probably not due to computational resources), is model ensembling. The idea is to train multiple models and use their combined outputs for prediction. Ensembling is often more stable and less prone to overfitting than individual models.
+
 
 ## Image Preprocessing
 #### Image Sizing
