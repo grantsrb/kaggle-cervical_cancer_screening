@@ -17,7 +17,7 @@ My current plan to improve results consists of the following.
 #### Add 1x1 Convolution Layers
 First, I recently learned why Google's inception net uses 1x1 convolutions before running their 3x3 and 5x5 kernels. The reason is that a 1x1 convolution can effectively maxpool the depth of a layer which can reduce the computational power needed to use and train the net. A layer that has a depth of 60 can be unwieldy for both a 3x3 and 5x5 filter to convolve. A 1x1 filter can effectively reduce the depth to something more manageable. Additionally this step adds another nonlinearity (elu or otherwise) which can help the model. So I plan on constructing a new model with these considerations in mind.
 
-#### Increase Depths
+#### Increase Depths (both total model depth and individual layer depths)
 Another thing worth considering is increasing the total depth of the model and increasing the depth of later layers. I currently have the depths of each layer consecutively decrease. This was under the thought that there are fewer features to look for later in the net after the initial features have been noticed correctly. This, however, is potentially wrong. In Imagenet classification, the models often have increasing depth later in the process which, [when visualized](http://yosinski.com/deepvis), seem to be building increasing possibilities off of more basic features in past convolutional layers. Greater depth in both the total architecture and the layers will hopefully improve the model's ability to classify cervixes.
 
 #### Visualize Layers
