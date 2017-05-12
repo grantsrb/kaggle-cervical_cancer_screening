@@ -213,13 +213,10 @@ def create_inception_v4(nb_classes=1001, load_weights=True):
 
     # Dropout
     x = Dropout(0.8)(x)
-    x = Flatten()(x)
+    flat_layer = Flatten()(x)
 
-    # Output
-    out = Dense(output_dim=nb_classes, activation='softmax')(x)
 
-    model = Model(init, out, name='Inception-v4')
-
+    # Weights
     if load_weights:
         if K.backend() == "theano":
             if K.image_dim_ordering() == "th":
@@ -236,10 +233,9 @@ def create_inception_v4(nb_classes=1001, load_weights=True):
                 weights = get_file('inception_v4_weights_tf_dim_ordering_tf_kernels.h5', TH_BACKEND_TF_DIM_ORDERING,
                                    cache_subdir='models')
 
-        model.load_weights(weights)
         print("Model weights loaded.")
 
-    return model
+    return init, flat_layer, weights
 
 
 if __name__ == "__main__":
