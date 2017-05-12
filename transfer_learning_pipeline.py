@@ -56,13 +56,15 @@ from keras import optimizers
 from keras.layers import Dense
 
 init, flat_layer, weights = incept.create_inception_v4()
-flat_layer.trainable = False
 flat_layer = Dense(1001, activation='elu')(flat_layer)
 flat_layer = Dense(100, activation='elu')(flat_layer)
 outs = Dense(3, activation='elu')(flat_layer)
 
 model = Model(inputs=init,outputs=outs)
 model.load_weights(weights, by_name=True)
+
+for i in range(len(model.layers[:-3])):
+    model.layers[i].trainable = False
 
 learning_rate = .0001
 for i in range(20):
