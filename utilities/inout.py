@@ -12,8 +12,8 @@ from multiprocessing import Pool
 from utilities import image_manipulation as imanip
 
 def read_paths(path, no_labels=False, label_type=None):
-    # ** Takes a directory path and returns all of the file
-    # paths within the directory. It uses the
+    # ** Takes a directory path and returns all of the file paths within the
+    # directory, their labels, and the total number of classes. It uses the
     # subdirectories to create a corresponding label array **
 
     # path - string of path to the root directory
