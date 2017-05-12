@@ -29,10 +29,6 @@ X_train_paths, y_train = inout.get_split_data(training_csv)
 X_valid_paths, y_valid = inout.get_split_data(valid_csv)
 n_labels = max(y_train)+1
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 1e0572835c341b958f53ed623ced42a5b4c5386f
 y_train = imanip.one_hot_encode(y_train, n_labels)
 y_valid = imanip.one_hot_encode(y_valid, n_labels)
 
