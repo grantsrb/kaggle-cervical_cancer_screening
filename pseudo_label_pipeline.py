@@ -29,10 +29,6 @@ X_train_paths, y_train = inout.get_split_data(training_csv)
 X_valid_paths, y_valid = inout.get_split_data(valid_csv)
 n_labels = max(y_train)+1
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 1e0572835c341b958f53ed623ced42a5b4c5386f
 y_train = imanip.one_hot_encode(y_train, n_labels)
 y_valid = imanip.one_hot_encode(y_valid, n_labels)
 
@@ -68,13 +64,41 @@ inputs, outs = mod.cnn_model(first_conv_shapes, conv_shapes, conv_depths, dense_
 
 model = Model(inputs=inputs,outputs=outs)
 
-model.load_weights('./models/gpu_model_update.h5')
-learning_rate = .0001
+model.load_weights('./models/model_update.h5')
+learning_rate = .00001
+
 for i in range(20):
-    if i > 4:
-        learning_rate = .00001 # Anneals the learning rate
-    adam_opt = optimizers.Adam(lr=learning_rate)
-    model.compile(loss='categorical_crossentropy', optimizer=adam_opt, metrics=['accuracy'])
-    history = model.fit_generator(train_generator, train_steps_per_epoch, epochs=1,
-                        validation_data=valid_generator,validation_steps=valid_steps_per_epoch, max_q_size=1)
-    model.save('./models/gpu_model_update.h5')
+	adam_opt = optimizers.Adam(lr=learning_rate)
+	model.compile(loss='categorical_crossentropy',
+								optimizer=adam_opt,
+								metrics=['accuracy'])
+	if i > 0:
+		model.fit_generator(train_generator,
+						# train_steps_per_epoch,
+						1,
+						epochs=1,
+						max_q_size=1)
+	model.save('./models/pseudo_model.h5')
+	valid_predictions = model.predict_generator(valid_generator,
+											valid_steps_per_epoch,
+											max_q_size=1)
+
+	correct = np.equal(np.argmax(valid_predictions,axis=1),
+							np.argmax(y_valid,axis=1))
+	acc = np.mean(correct)
+	print("Validation accuracy:",acc)
+
+	# Pseudolabeled Generator
+	pseudo_fraction = 1/4.
+	train_generator = inout.pseudo_generator(X_train_paths,
+										y_train,
+										X_valid_paths,
+										valid_predictions,
+										batch_size,
+										resize_dims=resize_dims,
+										pseudo_fraction=pseudo_fraction,
+										randomly_augment=add_random_augmentations)
+
+	n_samples = n_train_samples + n_valid_samples
+	pseud_batch_size = batch_size*(1-pseudo_fraction)
+	train_steps_per_epoch = misc.get_steps(n_samples,pseud_batch_size,n_augs=1)
