@@ -17,7 +17,7 @@ def show(img):
 
 def resize(path, maxsizes=(256,256,3), save_path=None, add_flip=False):
     # ** Takes an image file path, reads in the image, and resizes the image to
-    #   the specified dimensions without distortion. **
+    #   the specified dimensions without distortion. Uses ratioresize() **
 
     # path - image file path to be read and resized
     # maxsizes - the dimensions to be resized to
@@ -44,13 +44,15 @@ def ratioresize(img, maxsizes):
     #   the aspect ratio **
 
     # img - image as PIL image or numpy array
+    # maxsizes - tuple of resize dimensions
 
     if type(img) == type(np.array([])):
         img = Image.fromarray(img)
     img.thumbnail(maxsizes, PIL.Image.ANTIALIAS)
     rand_img = (np.random.random(maxsizes)*255).astype(np.uint8)
     padded_img = Image.fromarray(rand_img)
-    padded_img.paste(img, ((maxsizes[0]-img.size[0])//2,(maxsizes[1]-img.size[1])//2))
+    padded_img.paste(img, ((maxsizes[0]-img.size[0])//2,
+                            (maxsizes[1]-img.size[1])//2))
     return padded_img
 
 def change_brightness(image, delta):
