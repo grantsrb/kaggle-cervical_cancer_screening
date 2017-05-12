@@ -4,11 +4,10 @@ from sklearn.utils import shuffle
 import os
 
 # Internal Imports
-import inout
-import image_manipulation as imanip
-import model as mod
-import miscellaneous as misc
-import inceptionV4 as incept
+from utilities import inout
+from utilities import image_manipulation as imanip
+from utilities import miscellaneous as misc
+from models import inceptionV4 as incept
 
 ############# User Defined Variables
 

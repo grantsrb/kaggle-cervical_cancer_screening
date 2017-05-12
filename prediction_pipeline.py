@@ -1,9 +1,9 @@
 import time
 import numpy as np
 
-import inout
-import miscellaneous as misc
-import model as mod
+from utilities import inout
+from utilities import miscellaneous as misc
+from models import model as mod
 
 from multiprocessing.pool import ThreadPool
 

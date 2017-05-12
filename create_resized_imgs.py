@@ -3,8 +3,8 @@ from itertools import count
 import os
 
 # Internal Imports
-import inout
-import image_manipulation as imanip
+from utilities import inout
+from utilities import image_manipulation as imanip
 
 new_img_shape = (256,256,3)
 

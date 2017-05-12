@@ -1,4 +1,4 @@
-import inout
+from utilities import inout
 from sklearn.utils import shuffle
 
 root_path = 'resized/train'
