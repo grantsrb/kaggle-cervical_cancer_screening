@@ -1,4 +1,4 @@
-name: obama
+name: foo_cpu
 channels:
     - https://conda.anaconda.org/menpo
     - conda-forge
