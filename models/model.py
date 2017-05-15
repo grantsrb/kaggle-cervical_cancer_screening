@@ -49,26 +49,26 @@ def cnn_model_1x1(conv_shapes=[(3,3),(5,5)], conv_depths=[8,10,13,15,20], dense_
     layer = BatchNormalization()(inputs)
 
     stacks = []
-    for shape in conv_shapes:
+    for shape in conv_shapes+[(4,4)]:
         stacks.append(Conv2D(conv_depths[0],shape,padding='same',activation='elu')(layer))
     layer = concatenate(stacks,axis=-1)
-    layer = MaxPooling2D(pooling_filter,strides=pooling_stride, padding='same')(layer)
     layer = BatchNormalization()(layer)
+    layer = MaxPooling2D(pooling_filter,strides=pooling_stride, padding='same')(layer)
+
 
     for i in range(1,len(conv_depths)):
         stacks = []
-        stacks.append(Conv2D(ones_depth,[1,1],padding='same',activation='elu')(layer))
-        for shape in conv_shapes:
-            stacks.append(Conv2D(conv_depths[i],shape,padding='same',activation='elu')(stacks[0]))
-        layer = concatenate(stacks,axis=-1)
-        layer = MaxPooling2D(pooling_filter,strides=pooling_stride, padding='same')(layer)
+        layer = Conv2D(ones_depth+i*3,[1,1],padding='same',activation='elu')(layer)
         layer = BatchNormalization()(layer)
-        layer = Dropout(.05)(layer)
-
-    layer = Conv2D(ones_depth,[1,1],padding='same',activation='elu')(layer)
+        for shape in conv_shapes:
+            stacks.append(Conv2D(conv_depths[i],shape,padding='same',activation='elu')(layer))
+        layer = concatenate(stacks,axis=-1)
+        layer = BatchNormalization()(layer)
+        layer = MaxPooling2D(pooling_filter,strides=pooling_stride, padding='same')(layer)
+        layer = Dropout(.05+(i-1)*10**-2)(layer)
 
     fclayer = Flatten()(layer)
-    fclayer = Dropout(0.2)(fclayer)
+    fclayer = Dropout(0.1)(fclayer)
 
     for i in range(len(dense_shapes)-1):
         fclayer = Dense(dense_shapes[i], activation='elu')(fclayer)
