@@ -8,12 +8,9 @@ from models import model as mod
 from multiprocessing.pool import ThreadPool
 
 ############### User Defined Variables
-#
-# data_path = '/Volumes/WhiteElephant/cervical_cancer/test'
-# model_path = 'model_update.h5'
 
 data_path = './test'
-model_path = 'gpu_model_update.h5'
+model_path = 'weights/gpu_model_update.h5'
 
 resize_dims = (256,256,3)
 test_divisions = 20 # Used for segmenting image evaluation in threading
