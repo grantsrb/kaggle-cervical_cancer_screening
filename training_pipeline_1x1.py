@@ -16,11 +16,10 @@ batch_size = 100
 image_shape = (256,256,3)
 
 conv_shapes=[(3,3),(5,5)]
-conv_depths=[8,10,13,15,20]
-# conv_depths=[15,15,17,20,25]
-dense_shapes=[100,50,3]
+conv_depths=[10,12,14,16,20]
+dense_shapes=[200,70,3]
 image_shape=(256,256,3)
-ones_depth=15
+ones_depth=25
 
 training_csv = 'train_set.csv'
 valid_csv = 'valid_set.csv'
@@ -65,9 +64,9 @@ from keras import optimizers
 inputs, outs = mod.cnn_model_1x1(conv_shapes, conv_depths, dense_shapes, image_shape, n_labels,ones_depth)
 
 model = Model(inputs=inputs,outputs=outs)
-model.load_weights('./weights/model_1x1.h5', by_name=True)
+
+adam_opt = optimizers.Adam(lr=.0001)
 for i in range(20):
-    adam_opt = optimizers.Adam()
     model.compile(loss='categorical_crossentropy', optimizer=adam_opt, metrics=['accuracy'])
     history = model.fit_generator(train_generator, train_steps_per_epoch, epochs=1,
                         validation_data=valid_generator,validation_steps=valid_steps_per_epoch, max_q_size=1)
