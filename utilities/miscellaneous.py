@@ -34,3 +34,12 @@ def get_steps(n_samples,batch_size,n_augs=1):
     if n_samples % batch_size == 0:
         train_steps_per_epoch = n_samples//batch_size
     return steps_per_epoch
+
+def histdict(arr, n_labels):
+    histd = dict()
+    for x in arr:
+        if x in histd:
+            histd[x] += 1
+        else:
+            histd[x] = 1
+    return histd
