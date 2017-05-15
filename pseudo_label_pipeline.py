@@ -64,7 +64,7 @@ inputs, outs = mod.cnn_model(first_conv_shapes, conv_shapes, conv_depths, dense_
 
 model = Model(inputs=inputs,outputs=outs)
 
-model.load_weights('./models/model_update.h5')
+model.load_weights('./weights/model_update.h5')
 learning_rate = .00001
 
 for i in range(20):
@@ -78,7 +78,7 @@ for i in range(20):
 						1,
 						epochs=1,
 						max_q_size=1)
-	model.save('./models/pseudo_model.h5')
+	model.save('./weights/pseudo_model.h5')
 	valid_predictions = model.predict_generator(valid_generator,
 											valid_steps_per_epoch,
 											max_q_size=1)
@@ -100,5 +100,5 @@ for i in range(20):
 										randomly_augment=add_random_augmentations)
 
 	n_samples = n_train_samples + n_valid_samples
-	pseud_batch_size = batch_size*(1-pseudo_fraction)
-	train_steps_per_epoch = misc.get_steps(n_samples,pseud_batch_size,n_augs=1)
+	pseudo_batch_size = batch_size*(1-pseudo_fraction)
+	train_steps_per_epoch = misc.get_steps(n_samples,pseudo_batch_size,n_augs=1)
