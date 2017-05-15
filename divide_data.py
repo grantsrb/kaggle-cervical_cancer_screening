@@ -4,14 +4,15 @@ from sklearn.utils import shuffle
 train_csv = 'train_set.csv'
 valid_csv = 'valid_set.csv'
 
-root_path = 'resized/train'
-image_paths, labels, n_labels = inout.read_paths(root_path)
 
-# root_paths = ['resized/Type_1', 'resized/Type_2', 'resized/Type_3']
-# for i,root_path in enumerate(root_paths):
-#     new_paths, new_labels, _ = inout.read_paths(root_path,label_type=i)
-#     image_paths += new_paths
-#     labels += new_labels
+image_paths = []
+labels = []
+
+root_paths = ['resized/train','resized/extra']
+for i,root_path in enumerate(root_paths):
+    new_paths, new_labels, n_labels = inout.read_paths(root_path)
+    image_paths += new_paths
+    labels += new_labels
 
 image_paths, labels = shuffle(image_paths, labels)
 
