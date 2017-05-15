@@ -158,7 +158,7 @@ def random_zoom(image, max_zoom=1/6., allow_out_zooms=False):
 
     return zoom_img.astype(np.float32)
 
-def random_augment(image, rotation_limit=180, shift_limit=10,
+def random_augment(image, rotation_limit=45, shift_limit=10,
                     zoom_limit=1/3., random_fill=True):
     # ** Returns a randomly rotated, translated, or scaled copy of an image. **
 
@@ -168,17 +168,17 @@ def random_augment(image, rotation_limit=180, shift_limit=10,
     # zoom_limit - maximum scaling amount in either direction
     # random_fill - adds random values to empty pixels after rotation.
 
-    augmentation_type = random.randint(0,2)
+    augmentation_type = random.randint(0,4)
 
     # Rotation
-    if augmentation_type == 0:
+    if augmentation_type >= 0 and augmentation_type <= 1:
         random_angle = random.randint(-rotation_limit,rotation_limit)
         while random_angle == 0:
             random_angle = random.randint(-rotation_limit,rotation_limit)
         aug_image = rotate(image,random_angle,random_fill=random_fill)
 
     # Translation
-    elif augmentation_type == 1:
+    elif augmentation_type >= 2 and augmentation_type <=3:
         row_shift = random.randint(-shift_limit, shift_limit)
         col_shift = random.randint(-shift_limit, shift_limit)
         aug_image = translate(image,row_shift,col_shift)
