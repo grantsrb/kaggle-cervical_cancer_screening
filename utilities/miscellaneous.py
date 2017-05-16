@@ -43,3 +43,26 @@ def histdict(arr, n_labels):
         else:
             histd[x] = 1
     return histd
+
+def get_accuracy(loss, num_samples, confidence, n_classes, start_acc=.5, acc_increment=0.0000001, acc_precision=1):
+    # ** Calculates approximate accuracy given a kaggle log-loss evaluation.
+    #   Returns both approximate accuracy calculation and resulting loss
+    #   calculation from approximated accuracy **
+
+    # loss - Real loss (from Kaggle) as float
+    # num_samples - integer of number of samples used in loss calculation
+    # confidence - float of the confidence of the prediction (assumes remaining confidence equally distributed)
+    # n_classes - integer of number of classes in prediction
+    # start_acc - optional float indicating lower bound of approximate accuracy
+    # acc_increment - optional float indicating degree of increment in accuracy approximation
+    # acc_precision - optional float indicating degree of precision in accuracy approximation
+    
+    loss = loss*num_samples
+    calculated_loss = 0
+    accuracy = start_acc
+    while (calculated_loss-loss)**2 > acc_precision and accuracy <= 1:
+        accuracy += acc_increment
+        num_right = int(num_samples*accuracy)
+        num_wrong = num_samples-num_right
+        calculated_loss = -(num_right*math.log(confidence) + num_wrong*math.log((1-confidence)/(n_classes-1)))
+    return accuracy, calculated_loss/num_samples
