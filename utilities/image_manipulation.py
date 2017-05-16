@@ -92,7 +92,7 @@ def translate(img, row_amt, col_amt, color_range=255):
     # row_shift - the maximum vertical translation in both directions in pixels
     # col_shift - the maximum horizontal translation in both directions in pixels
     # color_range - the range of color values for the random filling
-    translation = np.random.random(img.shape).astype(img.dtype)*color_range
+    translation = np.random.random(img.shape).astype(np.float32)*color_range
     if row_amt > 0:
         if col_amt > 0:
             translation[row_amt:,col_amt:] = img[:-row_amt,:-col_amt]
@@ -114,7 +114,7 @@ def translate(img, row_amt, col_amt, color_range=255):
             translation[:,:col_amt] = img[:,-col_amt:]
         else:
             return img.copy()
-    return translation
+    return translation.astype(img.dtype)
 
 def random_zoom(image, max_zoom=1/6., allow_out_zooms=False):
     # ** Returns a randomly zoomed (scaled) copy of an image. If the
