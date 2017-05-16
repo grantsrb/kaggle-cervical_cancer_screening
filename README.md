@@ -3,16 +3,22 @@
 ## Satchel Grant
 
 
-_May 3rd, 2017 Performance Update: Model is achieving ~65% accuracy on validation set._
+_May 3rd, 2017 Performance Update: Model is achieving ~66% accuracy on validation set._
 
 ## Overview
 This is a project to use the medical images provided by Kaggle, Intel, and MobileODT to create a classification pipeline for cervical type. This can be useful for determining treatments and testing procedures when treating and diagnosing cervical cancer.
 
 The pipelines in this project use Convolutional Neural Net (CNN) models written in Python using the Keras functional API for image classification. The pipelines also use various image manipulation libraries. The rest of this readme walks you through the different parts of the project.
 
+## Project Navigation
+
+This README discusses the various approaches of this project without references to the code. Launch the [cervical_classification](./cervical_classification.ipynb) Jupyter notebook for a project walk through that directly discusses the code.
+
 ## Setup and Installation
 
-These instructions assume you are using bash.
+#### Miniconda Environment
+
+These instructions assume basic knowledge of terminal and bash.
 
 The required packages for this project are listed in the environment files located in the [environment directory](./environments/).
 
@@ -20,7 +26,7 @@ The easiest way to set up the required packages is using `miniconda`.
 
 First install [`miniconda`](https://conda.io/miniconda.html) onto your computer using the python 3.6 version.
 
-Then clone this repository and navigate to the `environments` folder:
+Then clone this repository and navigate to the `environments` folder within the project:
 
 ```
 $ git clone https://github.com/grantsrb/kaggle-cervical_cancer_screening
@@ -63,11 +69,11 @@ This runs the conda environment so that you can use the required packages. When 
 source deactivate
 ```
 
+#### Downloading the Data
 
-## Project Navigation
+The data for this project can be found [here](https://www.kaggle.com/c/intel-mobileodt-cervical-cancer-screening/data) in the [Intel and MobileODT Cervical Cancer Screening](https://www.kaggle.com/c/intel-mobileodt-cervical-cancer-screening) competition on [Kaggle](https://www.kaggle.com/).
 
-The rest of this README discusses the approaches that have gone into this project without references to the code. See the [cervical_classification](./cervical_classification.ipynb) notebook for a project walk through that directly discusses the code.
-
+Save the `train` and `test` data to the `data` folder in this project. Optionally, save the extra datasets to the `extra` folder in the respective `Type_*` folders.
 
 ## Image Preprocessing
 #### Image Sizing
@@ -93,6 +99,8 @@ I started with a relatively small model and tried to fit a portion of the traini
 I increased the size and complexity of the model. This is the current state of the model and it is getting about 60% accuracy.
 
 ### Model Architectures
+
+#### [cnn_model()](,/models/model.py)
 To avoid picking a filter size for the convolutions, I decided to run a 3x3, 4x4, and 5x5 filter in parallel at the first layer with the largest convolutional depth. For subsequent convolutional layers I only ran a 3x3 and 5x5 filter with decreasing depths due to RAM limits.
 
 I end the model with 2 fully connected layers decreasing in size followed by an output layer.
@@ -101,27 +109,39 @@ I end the model with 2 fully connected layers decreasing in size followed by an 
 | Layer         		|     Description	        					|
 |:---------------------:|:---------------------------------------------:|
 | Input         		| 256x256x3 image   							|
-| BatchNormalization         		| Centers and normalizes image pixels   							|
+| BatchNormalization         		| Centers and normalizes image pixels |
 | Convolution 3x3, 4x4, 5x5     	| 1x1 stride, same padding, depth 12, outputs 256x256x36 	|
 | ELU					|												|
+| BatchNormalization         		| Centers and normalizes image pixels |
 | Max pooling 2x2	      	| 2x2 stride,  outputs 128x128x36 				|
+| Dropout	      	| 0.05 probability 				|
 | Convolution 3x3, 5x5     	| 1x1 stride, same padding, depth 12, outputs 128x128x36	|
 | ELU					|												|
+| BatchNormalization         		| Centers and normalizes image pixels |
 | Max pooling 2x2	      	| 2x2 stride,  outputs 64x64x36 				|
+| Dropout	      	| 0.06 probability 				|
 | Convolution 3x3, 5x5     	| 1x1 stride, same padding, depth 11, outputs 64x64x33 	|
 | ELU					|												|
+| BatchNormalization         		| Centers and normalizes image pixels |
 | Max pooling 2x2	      	| 2x2 stride,  outputs 32x32x33 				|
+| Dropout	      	| 0.07 probability 				|
 | Convolution 3x3, 5x5     	| 1x1 stride, same padding, depth 8, outputs 32x32x24 	|
 | ELU					|												|
+| BatchNormalization         		| Centers and normalizes image pixels |
 | Max pooling 2x2	      	| 2x2 stride,  outputs 16x16x24 				|
+| Dropout	      	| 0.08 probability 				|
 | Convolution 3x3, 5x5     	| 1x1 stride, same padding, depth 8, outputs 16x16x24 	|
 | ELU					|												|
+| BatchNormalization         		| Centers and normalizes image pixels |
 | Max pooling 2x2	      	| 2x2 stride,  outputs 8x8x24 				|
+| Dropout	      	| 0.09 probability 				|
 | Dropout	      	| 0.2 probability 				|
 | Fully connected x100		| 1536x100, outputs x100        									|
 | ELU					|												|
+| BatchNormalization         		| Centers and normalizes image pixels |
 | Fully connected x50		| 100x50, outputs x50        									|
 | ELU					|												|
+| BatchNormalization         		| Centers and normalizes image pixels |
 | Fully connected	x3	| 50x3, outputs x3        									|
 
 
@@ -129,13 +149,62 @@ I chose to use ELU activations due to their protection against 'dead neurons' of
 
 RAM was a large consideration in the construction of the model. I would have liked to have greater depth in the initial convolutions and fully connected layers, but the g2.2xlarge instance would max out with too complex of an architecture. This additionally forced a smaller batch size and reduced worker queue in the Keras fit_generator function.
 
-#### Add 1x1 Convolution Layers
+#### [cnn_model_1x1()](,/models/model.py)
 Google's inception net uses 1x1 convolutions before their 3x3 and 5x5 filters. The reason is that a 1x1 convolutions can effectively pool the depth of a layer which can reduce the computational power needed to use and train the net. A layer that has a depth of 60 can be unwieldy for both a 3x3 and 5x5 filter to convolve. A preceding 1x1 filter can reduce the depth to something more manageable. Additionally this step adds another nonlinearity (elu or otherwise) which can help the model.
 
-The 1x1 additions have allowed for a deeper, more complex model. The results so far have been promising.
+The 1x1 additions have allowed for a deeper, more complex model. The results so far have been promising, but it has been difficult to prevent overfitting.
 
-#### Increase Depths (both total model depth and individual layer depths)
-Another thing worth considering is increasing the total depth of the model and increasing the depth of later layers. I currently decrease the depths of each layer sequentially. This was under the theory that there are fewer features to look for later in the net after the initial features have been noticed. This theory, however, is potentially wrong. In Imagenet classification, the models often have increasing depths later in the process which, [when visualized](http://yosinski.com/deepvis), seem to be capturing an increasing number of possibilities built from the previous features in past convolutional layers. Greater depth in both the overall architecture and in the individual layers will hopefully improve the model's ability to classify cervixes.
+| Layer         		|     Description	        					|
+|:---------------------:|:---------------------------------------------:|
+| Input         		| 256x256x3 image   							|
+| BatchNormalization         		| Centers and normalizes image pixels |
+| Convolution 3x3, 4x4, 5x5     	| 1x1 stride, same padding, depth 20 each, outputs 256x256x60 	|
+| ELU					|												|
+| BatchNormalization         		| Centers and normalizes image pixels |
+| Max pooling 2x2	      	| 2x2 stride,  outputs 128x128x60 				|
+| Dropout	      	| 0.05 probability 				|
+| Convolution 1x1     	| 1x1 stride, same padding, depth 23, outputs 128x128x23	|
+| ELU					|												|
+| Convolution 3x3, 5x5     	| 1x1 stride, same padding, depth 15 each, outputs 128x128x30	|
+| ELU					|												|
+| BatchNormalization         		| Centers and normalizes image pixels |
+| Max pooling 2x2	      	| 2x2 stride,  outputs 64x64x30 				|
+| Dropout	      	| 0.06 probability 				|
+| Convolution 1x1     	| 1x1 stride, same padding, depth 26, outputs 128x128x26	|
+| ELU					|												|
+| Convolution 3x3, 5x5     	| 1x1 stride, same padding, depth 11, outputs 64x64x34 	|
+| ELU					|												|
+| BatchNormalization         		| Centers and normalizes image pixels |
+| Max pooling 2x2	      	| 2x2 stride,  outputs 32x32x34 				|
+| Dropout	      	| 0.07 probability 				|
+| Convolution 1x1     	| 1x1 stride, same padding, depth 29, outputs 128x128x29	|
+| ELU					|												|
+| Convolution 3x3, 5x5     	| 1x1 stride, same padding, depth 8, outputs 32x32x40 	|
+| ELU					|												|
+| BatchNormalization         		| Centers and normalizes image pixels |
+| Max pooling 2x2	      	| 2x2 stride,  outputs 16x16x40 				|
+| Dropout	      	| 0.08 probability 				|
+| Convolution 1x1     	| 1x1 stride, same padding, depth 32, outputs 128x128x32	|
+| ELU					|												|
+| Convolution 3x3, 5x5     	| 1x1 stride, same padding, depth 8, outputs 16x16x50 	|
+| ELU					|												|
+| BatchNormalization         		| Centers and normalizes image pixels |
+| Max pooling 2x2	      	| 2x2 stride,  outputs 8x8x50 |
+| Dropout	      	| 0.09 probability |
+| Dropout	      	| 0.2 probability |
+| Fully connected x100		| 3200x100, outputs x100 |
+| ELU					|	 |
+| BatchNormalization         		| Centers and normalizes image pixels |
+| Fully connected x50		| 100x50, outputs x50        	|
+| ELU					|												|
+| BatchNormalization         		| Centers and normalizes image pixels |
+| Fully connected	x3	| 50x3, outputs x3      |
+
+
+The driving factor for creating this model is increasing the total depth of the model and increasing the depth of the layers. In the cnn_model() the depths of each layer are sequentially decreased. This was done under the theory that there are fewer features to look for later in the net, after the initial features have been noticed.
+
+This theory, however, is potentially wrong. In Imagenet classification, the models often have increasing depths later in the process which, [when visualized](http://yosinski.com/deepvis), seem to be capturing an increasing number of possibilities built from the previous features in past convolutional layers. Greater depth in both the overall architecture and in the individual layers will hopefully improve the model's ability to classify cervixes.
+
 
 ## Improvement TODO
 
