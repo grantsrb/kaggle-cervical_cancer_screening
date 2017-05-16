@@ -292,3 +292,18 @@ def save_brightness(path,delta):
     split_path[-1] = 'b'+str(delta)+split_path[-1]
     new_path = '/'.join(split_path)
     save_img.save(new_path)
+
+def read_submission(csv_path):
+    # ** Reads image names and predictions from Kaggle submission file **
+
+    # csv_path - file path as string to Kaggle submission csv
+
+    with open(csv_path, 'r') as f:
+        header = next(f)
+        imgs = []
+        predictions = []
+        for line in f:
+            split_line = line.split(',')
+            imgs.append(str(split_line[0]))
+            predictions.append([float(x) for x in split_line[1:]])
+    return imgs, predictions
