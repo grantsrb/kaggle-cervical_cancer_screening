@@ -3,7 +3,7 @@
 ## Satchel Grant
 
 
-_May 3rd, 2017 Performance Update: Model is achieving ~66% accuracy on validation set._
+_May 3rd, 2017 Performance Update: Model is achieving ~66% accuracy on test set._
 
 ## Overview
 This is a project to use the medical images provided by Kaggle, Intel, and MobileODT to create a classification pipeline for cervical type. This can be useful for determining treatments and testing procedures when treating and diagnosing cervical cancer.
