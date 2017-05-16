@@ -32,8 +32,6 @@ def cnn_model(first_conv_shapes=[(4,4),(3,3),(5,5)], conv_shapes=[(3,3),(5,5)], 
 
     for i in range(len(dense_shapes)-1):
         fclayer = Dense(dense_shapes[i], activation='elu')(fclayer)
-    #     if i == 0:
-    #         fclayer = Dropout(0.5)(fclayer)
         fclayer = BatchNormalization()(fclayer)
 
     outs = Dense(dense_shapes[-1], activation='softmax')(fclayer)
@@ -54,6 +52,7 @@ def cnn_model_1x1(conv_shapes=[(3,3),(5,5)], conv_depths=[8,10,13,15,20], dense_
     layer = concatenate(stacks,axis=-1)
     layer = BatchNormalization()(layer)
     layer = MaxPooling2D(pooling_filter,strides=pooling_stride, padding='same')(layer)
+    layer = Dropout(0.05)(layer)
 
 
     for i in range(1,len(conv_depths)):
