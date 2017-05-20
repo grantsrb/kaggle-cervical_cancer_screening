@@ -16,10 +16,8 @@ dependencies:
     - eventlet
     - flask-socketio
     - seaborn
-    - pandas
     - imageio
     - pip:
-        - dicom
         - moviepy
         - tensorflow
-        - git+https://github.com/fchollet/keras.git
+        - keras
