@@ -1,10 +1,13 @@
 import tensorflow as tf
 
-
 def conv2d(layer, weights, biases, name, strides=[1,1,1,1], padding='SAME'):
     activs = tf.nn.conv2d(layer, weights, strides=strides, padding=padding, name=name+"_conv2d")
     activs = tf.nn.bias_add(activs, biases)
     return tf.nn.relu(activs, name=name+'_relu')
+
+def dense(layer, weights, biases, name):
+    activs = tf.matmul(layer, weights, name=name+"_matmul")
+    return tf.nn.bias_add(activs, biases, name=name+"_biased")
 
 def global_avg_pooling(layer, name):
     shape = tf.shape(layer)
@@ -42,19 +45,24 @@ def create(inputs, n_classes):
     conv_1 = conv2d(normed, init_weight, init_bias, 'init_conv')
 
     res_1 = res_block(conv_1,[20,20,20],'res1',5)
-    pool1 = avg_pooling(res_1, 'res1')
+    pool1 = max_pooling(res_1, 'res1')
 
     res_2 = res_block(pool1, [20,20,20], 'res2',3)
-    pool2 = avg_pooling(res_2, 'res2')
+    pool2 = max_pooling(res_2, 'res2')
 
     res_3 = res_block(pool1, [20,20,20], 'res3',3)
-    pool3 = avg_pooling(res_3, 'res3')
+    pool3 = max_pooling(res_3, 'res3')
 
     res_4 = res_block(pool1, [20,20,20], 'res4',3)
-    pool4 = avg_pooling(res_4, 'res4')
+    pool4 = max_pooling(res_4, 'res4')
 
-    last_weight = tf.Variable(tf.truncated_normal([5,5,20,n_classes]), name="last_w")
-    last_bias = tf.Variable(tf.zeros(n_classes), name='last_b')
-    last_layer = conv2d(pool4, last_weight, last_bias, 'last')
+    penult_weight = tf.Variable(tf.truncated_normal([3,3,20,20]), name="penult_w")
+    penult_bias = tf.Variable(tf.zeros(20), name='penult_b')
+    penult_layer = conv2d(pool4, penult_weight, penult_bias, 'penult')
+    penult_layer = global_avg_pooling(last_layer,'penultavg')
 
-    return global_avg_pooling(last_layer,'out')
+    fc_weight = tf.Variable(tf.truncated_normal([20, n_classes]))
+    fc_bias = tf.Variable(tf.zeros([n_classes]))
+    final_layer = dense(penult, fc_weight, fc_bias, name='final')
+
+    return tf.nn.softmax(final_layer)
