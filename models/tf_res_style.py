@@ -1,3 +1,4 @@
+import numpy as np
 import tensorflow as tf
 
 def conv2d(layer, weights, biases, name, strides=[1,1,1,1], padding='SAME'):
@@ -9,9 +10,8 @@ def dense(layer, weights, biases, name):
     activs = tf.matmul(layer, weights, name=name+"_matmul")
     return tf.nn.bias_add(activs, biases, name=name+"_biased")
 
-def global_avg_pooling(layer, name):
-    shape = tf.shape(layer)
-    return tf.nn.avg_pool(layer, ksize=[1,shape[1],shape[2],1],
+def global_avg_pooling(layer,k, name):
+    return tf.nn.avg_pool(layer, ksize=[1,k,k,1],
                                 strides=[1,1,1,1], padding="VALID",
                                 name=name+'_gapool')
 
@@ -22,47 +22,74 @@ def avg_pooling(layer, name, k=2):
     return tf.nn.avg_pool(layer, ksize=[1,k,k,1], strides=[1,k,k,1], padding='SAME', name=name+'avgp')
 
 def batch_norm(layer, name):
-    return tf.layers.batch_normalization(inputs, name=name+"_batch_norm")
+    return tf.layers.batch_normalization(layer, name=name+"_batch_norm")
 
-def res_block(layer, depths, name, filt_size=3):
-    shape = tf.shape(layer, name=name+"_shape")
-    ws = [tf.Variable(tf.truncated_normal([filt_size,filt_size,shape[-1],d]), name=name+"_w"+str(i)) for i,d in enumerate(depths)]
-    bs = [tf.Variable(tf.zeros(d), name=name+"_b"+str(i)) for i,d in enumerate(depths)]
+def res_block(layer, ws, bs, eye, name):
     activs = layer
+    if eye != None:
+        layer = tf.matmul(layer, eye, name=name+"eye")
     counts = [i for i in range(len(ws))]
     for i,w,b in zip(counts,ws,bs):
         activs = conv2d(activs, w, b, name+str(i))
         activs = batch_norm(activs, name+str(i))
-    eye = tf.identity(layer, name=name+"_eye")
-    return tf.add(eye,activs, name=name+"_add")
+    return tf.add(layer,activs, name=name+"_add")
 
-def create(inputs, n_classes):
-    shape = tf.shape(inputs)
-    init_weight = tf.Variable(tf.truncated_normal([5,5,shape[-1],20]), name="init_w")
+def get_tensors(img_shape, n_classes=3, res_depths=[20,20,20], n_resblocks=4):
+    tensordict = dict()
+    tensordict['n_classes'] = n_classes
+    tensordict['res_depths'] = res_depths
+    tensordict['n_resblocks'] = n_resblocks
+
+    init_weight = tf.Variable(tf.truncated_normal([5,5,img_shape[-1],res_depths[-1]]), name="init_w")
     init_bias = tf.Variable(tf.zeros(20), name='init_b')
+    tensordict['init'] = (init_weight, init_bias)
 
-    normed = batch_norm(inputs)
-    conv_1 = conv2d(normed, init_weight, init_bias, 'init_conv')
+    for i in range(n_resblocks):
+        ws = [tf.Variable(tf.truncated_normal([3,3, res_depths[j],res_depths[j+1]]),
+                                            name="resblock"+str(i)+"_w"+str(j)) for j in range(len(res_depths)-1)]
+        bs = [tf.Variable(tf.zeros(res_depths[j+1]),
+                            name="resblock"+str(i)+"_b"+str(j)) \
+                            for j in range(len(res_depths)-1)]
+        initial_eye = np.asarray([np.eye(img_shape[0]//(2**i)) for j in range(res_depths[-1])])
+        initial_eye = np.transpose(initial_eye,(2,0,1))
+        eye = tf.Variable(initial_value=initial_eye, name="ident"+str(i))
+        tensordict['resblock'+str(i)] = (ws, bs, eye)
 
-    res_1 = res_block(conv_1,[20,20,20],'res1',5)
-    pool1 = max_pooling(res_1, 'res1')
+    penult_weight = tf.Variable(tf.truncated_normal([3,3,res_depths[-1],res_depths[0]]), name="penult_w")
+    penult_bias = tf.Variable(tf.zeros(res_depths[0]), name='penult_b')
+    tensordict['penult'] = (penult_weight, penult_bias)
 
-    res_2 = res_block(pool1, [20,20,20], 'res2',3)
-    pool2 = max_pooling(res_2, 'res2')
+    tensordict['glob_avg_pool'] = img_shape[0]//(2**n_resblocks)
 
-    res_3 = res_block(pool1, [20,20,20], 'res3',3)
-    pool3 = max_pooling(res_3, 'res3')
+    dense_w = tf.Variable(tf.truncated_normal([res_depths[0], n_classes]))
+    dense_b = tf.Variable(tf.zeros([n_classes]))
+    tensordict['dense'] = (dense_w, dense_b)
 
-    res_4 = res_block(pool1, [20,20,20], 'res4',3)
-    pool4 = max_pooling(res_4, 'res4')
+    return tensordict
 
-    penult_weight = tf.Variable(tf.truncated_normal([3,3,20,20]), name="penult_w")
-    penult_bias = tf.Variable(tf.zeros(20), name='penult_b')
-    penult_layer = conv2d(pool4, penult_weight, penult_bias, 'penult')
-    penult_layer = global_avg_pooling(last_layer,'penultavg')
 
-    fc_weight = tf.Variable(tf.truncated_normal([20, n_classes]))
-    fc_bias = tf.Variable(tf.zeros([n_classes]))
-    final_layer = dense(penult, fc_weight, fc_bias, name='final')
+def create(inputs, tensordict, identity=False):
 
-    return tf.nn.softmax(final_layer)
+    normed = batch_norm(inputs, name='normed')
+    init_weight, init_bias = tensordict['init']
+    res_layer = conv2d(normed, init_weight, init_bias, 'init_conv')
+
+    n_resblocks = tensordict['n_resblocks']
+    for i in range(n_resblocks):
+        ws, bs, eye = tensordict['resblock'+str(i)]
+        if not identity: eye = None
+        res_layer = res_block(res_layer, ws, bs, eye, 'res'+str(i))
+        res_layer = max_pooling(res_layer, 'res'+str(i))
+
+    penult_weight, penult_bias = tensordict['penult']
+    penult_layer = conv2d(res_layer, penult_weight, penult_bias, 'penult')
+
+    k = tensordict['glob_avg_pool']
+    penult_layer = global_avg_pooling(penult_layer,k,'penult')
+    vector_len = tensordict['res_depths'][0]
+    penult_layer = tf.reshape(penult_layer, [-1, vector_len])
+
+    dense_w, dense_b = tensordict['dense']
+    final_layer = dense(penult_layer, dense_w, dense_b, name='final')
+
+    return final_layer
