@@ -26,14 +26,19 @@ The easiest way to set up the required packages is using `miniconda`.
 
 First install [`miniconda`](https://conda.io/miniconda.html) onto your computer using the python 3.6 version.
 
-Then clone this repository and navigate to the `environments` folder within the project:
+Then clone this repository:
 
 ```
 $ git clone https://github.com/grantsrb/kaggle-cervical_cancer_screening
-$ cd kaggle-cervical_cancer_screening/environments
 ```
 
-Make a new `conda` environment using the environment.yml file:
+Navigate to the main repo directory:
+
+```
+$ cd kaggle-cervical_cancer_screening/
+```
+
+Make a new `conda` environment using the environments/environment.yml file:
 
 ```
 $ conda env create -f environments/environment.yml
