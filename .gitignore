@@ -4,3 +4,5 @@ test.py
 *.jpg
 *.h5
 *.ckpt*
+train/
+test/
