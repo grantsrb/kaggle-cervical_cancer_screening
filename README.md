@@ -56,6 +56,24 @@ Clean up residual files:
 $ conda clean -tp
 ```
 
+While the `conda` environment is active, launch Jupyter Notebook by typing:
+
+```
+$ jupyter notebook
+```
+
+And then select the `cervical_classification.ipynb` file.
+
+For everything to work correctly, you must download the data as detailed in the next section of this readme.
+
+#### Downloading the Data
+
+The data for this project can be found [here](https://www.kaggle.com/c/intel-mobileodt-cervical-cancer-screening/data) in the [Intel and MobileODT Cervical Cancer Screening](https://www.kaggle.com/c/intel-mobileodt-cervical-cancer-screening) competition on [Kaggle](https://www.kaggle.com/).
+
+Save the `train` and `test` data to the `data` folder in this project. Optionally, save the extra datasets to the `extra` folder in the respective `Type_*` folders.
+
+#### Uninstallation
+
 If you want to uninstall the environment use:
 
 ```
@@ -74,11 +92,6 @@ This runs the conda environment so that you can use the required packages. When 
 source deactivate
 ```
 
-#### Downloading the Data
-
-The data for this project can be found [here](https://www.kaggle.com/c/intel-mobileodt-cervical-cancer-screening/data) in the [Intel and MobileODT Cervical Cancer Screening](https://www.kaggle.com/c/intel-mobileodt-cervical-cancer-screening) competition on [Kaggle](https://www.kaggle.com/).
-
-Save the `train` and `test` data to the `data` folder in this project. Optionally, save the extra datasets to the `extra` folder in the respective `Type_*` folders.
 
 ## Image Preprocessing
 #### Image Sizing
