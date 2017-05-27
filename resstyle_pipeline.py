@@ -58,7 +58,7 @@ tflabels = tf.placeholder(tf.float32, [None, n_classes])
 tensors = res.get_tensors(image_shape)
 logits = res.create(tfimgs, tensors)
 
-loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits, labels=tflabels))
+loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=tflabels))
 optimizer = tf.train.AdamOptimizer().minimize(loss)
 
 n_equals = tf.equal(tf.argmax(logits, 1), tf.argmax(tflabels, 1))
