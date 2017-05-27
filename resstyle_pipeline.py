@@ -1,6 +1,7 @@
 import numpy as np
 from sklearn.utils import shuffle
 import os
+import time
 
 # Internal Imports
 from utilities import inout
@@ -10,7 +11,7 @@ from utilities import miscellaneous as misc
 
 
 n_classes = 3
-batch_size = 100
+batch_size = 110
 
 image_shape = (256,256,3)
 
@@ -72,16 +73,18 @@ epochacc = []
 
 with tf.Session() as sess:
     sess.run(init)
+    # saver.restore(sess, "./res_weights.ckpt")
     print("Begin Session")
     for epoch in range(100):
+        basetime = time.time()
         traincost, trainacc = 0, 0
         for batch in range(train_steps_per_epoch):
             imgs, labs = next(train_generator)
             opt, cost, acc = sess.run([optimizer, loss, accuracy], feed_dict={tfimgs: imgs, tflabels: labs})
-            print((batch+1)/train_steps_per_epoch*100, "\%  Cost:",cost, "- Acc:", acc)
+            print((batch+1), "/ {} ".format(train_steps_per_epoch), "  Cost:",cost, "- Acc:", acc, end='\r')
             traincost += cost
             trainacc += acc
-        print("Training Cost:", traincost, "- Accuracy:", trainacc)
+        print("Training Cost:", traincost/train_steps_per_epoch, "- Accuracy:", trainacc/train_steps_per_epoch)
 
         validcost, validacc = 0, 0
         for batch in range(valid_steps_per_epoch):
@@ -89,13 +92,10 @@ with tf.Session() as sess:
             opt, cost, acc = sess.run([optimizer, loss, accuracy], feed_dict={tfimgs: imgs, tflabels: labs})
             validcost += cost
             validacc += acc
-        print("Validation Cost:", validcost, "- Accuracy:", validacc)
+        print("Validation Cost:", validcost/valid_steps_per_epoch, "- Accuracy:", validacc/valid_steps_per_epoch)
 
-        saver.save(sess, 'res_weights.ckpt', global_step=epoch)
-
-
-
-
+        saver.save(sess, 'res_weights.ckpt')
+        print("Execution Time:",time.time()-basetime, 's')
 
 
 
