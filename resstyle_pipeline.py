@@ -57,7 +57,7 @@ tfimgs = tf.placeholder(tf.float32, [None]+[s for s in image_shape])
 tflabels = tf.placeholder(tf.float32, [None, n_classes])
 
 tensors = res.get_tensors(image_shape)
-logits = res.create(tfimgs, tensors)
+logits, layers = res.create(tfimgs, tensors)
 
 loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=tflabels))
 optimizer = tf.train.AdamOptimizer().minimize(loss)
@@ -73,7 +73,7 @@ epochacc = []
 
 with tf.Session() as sess:
     sess.run(init)
-    # saver.restore(sess, "./res_weights.ckpt")
+    # saver.restore(sess, "./weights/res_weights.ckpt")
     print("Begin Session")
     for epoch in range(100):
         basetime = time.time()
@@ -94,7 +94,7 @@ with tf.Session() as sess:
             validacc += acc
         print("Validation Cost:", validcost/valid_steps_per_epoch, "- Accuracy:", validacc/valid_steps_per_epoch)
 
-        saver.save(sess, 'res_weights.ckpt')
+        saver.save(sess, 'weights/res_weights.ckpt')
         print("Execution Time:",time.time()-basetime, 's')
 
 
