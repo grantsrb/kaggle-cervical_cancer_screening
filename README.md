@@ -36,7 +36,7 @@ $ cd kaggle-cervical_cancer_screening/environments
 Make a new `conda` environment using the environment.yml file:
 
 ```
-$ conda env create -f environment.yml
+$ conda env create -f environments/environment.yml
 ```
 
 Verify that the environment was created:
