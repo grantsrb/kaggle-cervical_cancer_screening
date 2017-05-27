@@ -64,7 +64,7 @@ inputs, outs = mod.cnn_model(first_conv_shapes, conv_shapes, conv_depths, dense_
 
 model = Model(inputs=inputs,outputs=outs)
 
-model.load_weights('./models/gpu_model_update.h5')
+model.load_weights('./weights/gpu_model_update.h5')
 learning_rate = .0001
 for i in range(20):
     if i > 4:
@@ -73,4 +73,4 @@ for i in range(20):
     model.compile(loss='categorical_crossentropy', optimizer=adam_opt, metrics=['accuracy'])
     history = model.fit_generator(train_generator, train_steps_per_epoch, epochs=1,
                         validation_data=valid_generator,validation_steps=valid_steps_per_epoch, max_q_size=1)
-    model.save('./models/gpu_model_update.h5')
+    model.save('./weights/gpu_model_update.h5')

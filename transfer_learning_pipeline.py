@@ -15,8 +15,8 @@ batch_size = 100
 image_shape = (299,299,3)
 feature_extraction_only = False
 
-training_csv = 'incept_train_set.csv'
-valid_csv = 'incept_valid_set.csv'
+training_csv = 'csvs/incept_train_set.csv'
+valid_csv = 'csvs/incept_valid_set.csv'
 
 
 ############# Read in Data

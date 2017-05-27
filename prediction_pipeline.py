@@ -9,7 +9,7 @@ from multiprocessing.pool import ThreadPool
 
 ############### User Defined Variables
 
-data_path = './test'
+data_path = './data/test'
 model_path = 'weights/gpu_model_update.h5'
 
 resize_dims = (256,256,3)
@@ -64,4 +64,4 @@ conf = .95 # Prediction confidence
 predictions = misc.confidence(predictions, conf)
 
 header = 'image_name,Type_1,Type_2,Type_3'
-inout.save_predictions('submission.csv', test_labels, predictions, header)
+inout.save_predictions('csvs/submission.csv', test_labels, predictions, header)

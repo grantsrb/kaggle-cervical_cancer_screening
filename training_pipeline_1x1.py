@@ -21,8 +21,8 @@ dense_shapes=[200,70,3]
 image_shape=(256,256,3)
 ones_depth=25
 
-training_csv = 'train_set.csv'
-valid_csv = 'valid_set.csv'
+training_csv = 'csvs/train_set.csv'
+valid_csv = 'csvs/valid_set.csv'
 
 
 ############# Read in Data
