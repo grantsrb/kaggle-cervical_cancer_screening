@@ -69,7 +69,7 @@ For everything to work correctly, you must also create two empty folders:
 ```
 $ mkdir weights/
 $ mkdir csvs/
-``
+```
 
 The last step is to download the data as detailed in the next section of this readme.
 
