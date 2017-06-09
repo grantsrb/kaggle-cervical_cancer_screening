@@ -263,7 +263,7 @@ Currently, I worry that the models are tracking the non-important features of th
 
 ## Failed Experiments
 
-#### Transfer Learning
+#### InceptionV4 Transfer
 A potential improvement is to repurpose a previously trained model. Usually the models are taken from the Imagenet competition. These models are made by smart people with lots of resources. It is easy to use pieces of their trained model as the backbone of a new model. We can append both fully connected (dense) and convolutional layers to the model and train only the new layers. This is known as feature extraction because the transferred model extracts the feature of the images for you to then train a small model on. Fine-tuning is the process of continuing the back-propagation into the transferred model.
 
 I attempted both feature extraction on Google's Inception V4 model. This gave poor results. The reason why is most likely that the Imagenet images are very different from the cervix images.
