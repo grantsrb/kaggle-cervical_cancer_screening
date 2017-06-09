@@ -7,3 +7,4 @@ test.py
 train/
 test/
 checkpoint
+*.npy
