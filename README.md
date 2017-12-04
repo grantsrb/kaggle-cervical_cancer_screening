@@ -1,5 +1,5 @@
 # Kaggle, Intel, and MobileODT Cervical Cancer Screening
-### April 27, 2017 (Ongoing)
+### April 27, 2017
 ## Satchel Grant
 
 
